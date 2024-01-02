@@ -8,7 +8,19 @@ import requests
 
 API_URL_ROOT = "https://ias1.larioja.org/apiSiar/servicios/v2/"
 
-def genera_url_datosClimaticos(estacion, frecuencia, **filtros):
+def extrae_num_maximo_registros():
+    api_url = API_URL_ROOT + "numero-maximo-registros"
+    res = requests.get(api_url) # conectamos con esa url método GET y guardamos el contenido en la variable res
+    
+    if res.ok:
+        res = res.json()
+        return(res["numero-maximo-registros"])
+    else:
+        print("Error al comunicar con la API")
+
+NUMERO_MAXIMO_REGISTROS = extrae_num_maximo_registros()
+
+def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
     """
     Es función auxiliar de extrae_datos_climaticos_API()
 
@@ -28,8 +40,8 @@ def genera_url_datosClimaticos(estacion, frecuencia, **filtros):
     return(api_url)
 
 # Test
-#genera_url_datosClimaticos(501, "M")
-#genera_url_datosClimaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+#genera_url_datos_climaticos(501, "M")
+#genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 
 
 def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
@@ -46,7 +58,7 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
          !!! pendiente añadir alguna funcionalidad para debugging, si DEBUG = TRUE entonces devolver la api_url generada e información sobre la respuesta recibida.
    
     """
-    api_url = genera_url_datosClimaticos(estacion, frecuencia, **filtros)
+    api_url = genera_url_datos_climaticos(estacion, frecuencia, **filtros)
 
     res = requests.get(api_url) # conectamos con esa url método GET y guardamos el contenido en la variable res
     
@@ -54,7 +66,10 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
         res = res.json() # lo que nos interesa de la respuesta está en el json, contiene variable count, "success" y "datos"
         if(res["success"] == 'true'): # ojo!!! res["success"]): # si ha funcionado
             if(int(res["count"]) > 0):
-                return(res["datos"])
+                if int(res["count"]) > NUMERO_MAXIMO_REGISTROS:
+                    pass
+                else:
+                    return(res["datos"])
             else:
                 print("Ningun dato disponible. str(res) = " + str(res))
         else:
@@ -63,7 +78,7 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
         print("Error al comunicar con la API")
 
 # Test
-#print("Extraer datos de la url = " + genera_url_datosClimaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
+#print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
 #datos_clima = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 
 
@@ -117,7 +132,7 @@ def filtra_datos_validos(response, incluir_datos_Sospechosos = False, valor_por_
 
 
 # Test
-#print("Extraer datos de la url = " + genera_url_datosClimaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "P", "funcion": "Ac"}))
+#print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "P", "funcion": "Ac"}))
 #datos_brutos_lluvia = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "P", "funcion": "Ac"})
 #datos_lluvia = filtra_datos_validos(datos_brutos_lluvia, incluir_datos_Sospechosos = False, valor_por_defecto_si_no_valido = "") 
 
