@@ -4,13 +4,18 @@
     Existen distintas partes del código que necesitan revisión, están marcados con el símbolo !!!
 
 """
-import requests
+import requests # peticiones html
+import datetime # Para trabajar con las fechas u horas
+import time # Para trabajar con las fechas u horas
+import math 
+
 
 API_URL_ROOT = "https://ias1.larioja.org/apiSiar/servicios/v2/"
 
+# FUNCIONES AUXILIARES
 def extrae_num_maximo_registros():
     api_url = API_URL_ROOT + "numero-maximo-registros"
-    res = requests.get(api_url) # conectamos con esa url método GET y guardamos el contenido en la variable res
+    res = requests.get(api_url)
     
     if res.ok:
         res = res.json()
@@ -18,7 +23,208 @@ def extrae_num_maximo_registros():
     else:
         print("Error al comunicar con la API")
 
+# Test
+#extrae_num_maximo_registros()
+
+def extrae_funciones_agregacion(extrae_abreviatura = False):
+    api_url = API_URL_ROOT + "funciones-agregacion"
+    
+    res = requests.get(api_url)
+    
+    if res.ok:
+        res = res.json()
+        res = res["funciones"]
+        if extrae_abreviatura:
+            abreviatura = []
+            for i in range(0, len(res)):
+                abreviatura.append(res[i]["abreviatura"])
+            return(abreviatura)
+        else:
+            return(res)
+
+    else:
+        print("Error al comunicar con la API")
+
+#Test
+#extrae_funciones_agregacion()
+#extrae_funciones_agregacion(True)
+
+
+
+def existe_funcion(abreviatura):
+    abreviaturas_posibles = extrae_funciones_agregacion(True)
+    for i in abreviaturas_posibles:
+        if(i == abreviatura): return(True)
+    return(False)
+
+#Test
+#existe_funcion("Med")
+#existe_funcion("Tremp")
+
+
+def extrae_parametros(extrae_abreviatura = False):
+    api_url = API_URL_ROOT + "parametros"
+    
+    res = requests.get(api_url)
+    
+    if res.ok:
+        res = res.json()
+        res = res["parametros"]
+        if extrae_abreviatura:
+            abreviatura = []
+            for i in range(0, len(res)):
+                abreviatura.append(res[i]["abreviatura"])
+            return(abreviatura)
+        else:
+            return(res)
+
+    else:
+        print("Error al comunicar con la API")
+
+#Test
+#extrae_parametros()
+#extrae_parametros(True)
+
+def existe_parametro(abreviatura):
+    abreviaturas_posibles = extrae_parametros(True)
+    for i in abreviaturas_posibles:
+        if(i == abreviatura): return(True)
+    return(False)
+
+#Test
+#existe_parametro("T")
+#existe_parametro("Tremp")
+
+def extrae_frecuencias(extrae_abreviatura = False):
+    api_url = API_URL_ROOT + "frecuencias"
+    
+    res = requests.get(api_url)
+    
+    if res.ok:
+        res = res.json()
+        res = res["frecuencias"]
+        if extrae_abreviatura:
+            abreviatura = []
+            for i in range(0, len(res)):
+                abreviatura.append(res[i]["abreviatura"])
+            return(abreviatura)
+        else:
+            return(res)
+
+    else:
+        print("Error al comunicar con la API")
+
+#Test
+#extrae_frecuencias()
+#extrae_frecuencias(True)
+
+
+def existe_frecuencia(abreviatura):
+    abreviaturas_posibles = extrae_frecuencias(True)
+    for i in abreviaturas_posibles:
+        if(i == abreviatura): return(True)
+    return(False)
+
+#Test
+#existe_frecuencia("T")
+#existe_frecuencia("Tremp")
+
+def extrae_posiciones(extrae_abreviatura = False):
+    api_url = API_URL_ROOT + "posiciones"
+    
+    res = requests.get(api_url)
+    
+    if res.ok:
+        res = res.json()
+        res = res["posiciones"]
+        if extrae_abreviatura:
+            abreviatura = []
+            for i in range(0, len(res)):
+                abreviatura.append(res[i]["abreviatura"])
+            return(abreviatura)
+        else:
+            return(res)
+
+    else:
+        print("Error al comunicar con la API")
+
+#Test
+#extrae_posiciones()
+#extrae_posiciones(True)
+
+def existe_posicion(abreviatura):
+    abreviaturas_posibles = extrae_posiciones(True)
+    for i in abreviaturas_posibles:
+        if(i == abreviatura): return(True)
+    return(False)
+
+#Test
+#existe_posicion("Standard")
+#existe_posicion("Tremp")
+
 NUMERO_MAXIMO_REGISTROS = extrae_num_maximo_registros()
+FUNCIONES_AGREGACION = extrae_funciones_agregacion()
+PARAMETROS = extrae_parametros()
+FRECUENCIAS = extrae_frecuencias()
+POSICIONES = extrae_posiciones()
+
+
+def extrae_estaciones(extrae_codigos = False): #, codigo_estacion = None):
+    #if(codigo_estacion  == None): #!!! is.none????
+    #    api_url = API_URL_ROOT + "estaciones"
+    #else:
+    api_url = API_URL_ROOT + "estaciones/" #+ codigo_estacion
+    
+    res = requests.get(api_url)
+    
+    if res.ok:
+        res = res.json()
+        res = res["estaciones"]
+        if extrae_codigos:
+            codigo_estacion = list()  #[]
+            for i in range(0, len(res)):
+                codigo_estacion.append(res[i]["codigo_estacion"])
+            return(codigo_estacion)
+        else:
+            return(res)
+
+    else:
+        print("Error al comunicar con la API")
+
+#Test
+extrae_estaciones()
+extrae_estaciones(True)
+
+
+def existe_estacion(codigo_estacion):
+    codigos_posibles = extrae_estaciones(True)
+    for i in codigos_posibles:
+        if(i == str(codigo_estacion)): return(True) #conversion de tipo porque el valor de la API se registra como str
+    return(False)
+
+#Test
+#existe_estacion("501")
+#existe_estacion(501)
+#existe_estacion("Tremp")
+
+def extraer_primera_fecha(estacion, frecuencia):
+    # !!! pendiente de modificación API
+    # por ahora va a devolver la primera fecha disponible
+    res = extrae_estaciones(extrae_codigos = False, codigo_estacion = estacion)
+    if frecuencia == 'T':
+        return res["fecha_primer_semihorario"]
+    else:
+        return res["fecha_primer_diario"]
+
+    
+def extraer_ultima_fecha(estacion, frecuencia):
+    # !!! pendiente de modificación API, por ahora va a devolver la última fecha
+  
+    h = time.time() # Convetirmos la hora actual a EPOCH y restamos media hora 
+    fecha_fin = str(h.year) + "-" + str(h.month) + "-" + str(h.day) + " " + str(h.hour) + ":" + str(h.minute) + ":00"
+
+    return(fecha_fin)
+    
 
 def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
     """
@@ -43,7 +249,6 @@ def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
 #genera_url_datos_climaticos(501, "M")
 #genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 
-
 def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
     """
         Obtiene la respuesta de la apisiar. Si es correcta devuelve los datos (según la descripción del objeto de respuesta descritos en manual)
@@ -58,30 +263,69 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
          !!! pendiente añadir alguna funcionalidad para debugging, si DEBUG = TRUE entonces devolver la api_url generada e información sobre la respuesta recibida.
    
     """
-    api_url = genera_url_datos_climaticos(estacion, frecuencia, **filtros)
-
+    api_url = genera_url_datos_climaticos(estacion, frecuencia,  **filtros)
     res = requests.get(api_url) # conectamos con esa url método GET y guardamos el contenido en la variable res
     
     if res.ok:
-        res = res.json() # lo que nos interesa de la respuesta está en el json, contiene variable count, "success" y "datos"
-        if(res["success"] == 'true'): # ojo!!! res["success"]): # si ha funcionado
-            if(int(res["count"]) > 0):
-                if int(res["count"]) > NUMERO_MAXIMO_REGISTROS:
-                    pass
-                else:
-                    return(res["datos"])
-            else:
+        res = res.json() # lo que nos interesa de la respuesta está en el json, contiene variable "count", "success" y "datos"
+        if(res["success"]):
+            numero_registros = int(res["count"])
+            if numero_registros == 0:
                 print("Ningun dato disponible. str(res) = " + str(res))
+                return(None)
+            elif numero_registros < NUMERO_MAXIMO_REGISTROS:
+                return(res)["datos"]
+            else:
+                print("Se supera el número máximo de registros, numero_registros = ", numero_registros)
+                return(extrae_datos_climaticos_exceso_registros(numero_registros, estacion, frecuencia, **filtros))
         else:
             print("Error al recibir los datos. str(res) = " + str(res))
+            return(None)
     else:
         print("Error al comunicar con la API")
+        return(None)
 
 # Test
-#print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
-#datos_clima = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
+datos_clima = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+datos_clima = extrae_datos_climaticos_API(501, "T", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 
+def extrae_datos_climaticos_exceso_registros(numero_registros, estacion, frecuencia, **filtros):
+    
+    # chequear si existen filtros de fecha_inicio y/o fecha_fin
+    fecha_inicio = None
+    fecha_fin = None
+    for key, value in filtros.items():
+        if key == fecha_inicio: fecha_inicio = value
+        if key == fecha_fin: fecha_fin = value
+    
+    # si no existen añadir fecha_inicio y fin para usarlos como filtros 
+    if(fecha_inicio == None): fecha_inicio = extraer_primera_fecha(estacion, frecuencia)
+    if(fecha_fin == None): fecha_fin = extraer_ultima_fecha(estacion, frecuencia)
 
+    #calcular el número de peticiones necesarias y otros parámetros útiles:
+    numero_peticiones = math.ceil(numero_registros/NUMERO_MAXIMO_REGISTROS)
+    
+    diferencia = datetime.strptime(fecha_inicio, '%Y-%m-%d') - datetime.strptime(fecha_fin, '%Y-%m-%d %H:%M:%S')
+
+    amplitud_intervalo_fechas = round(diferencia.total_seconds() / numero_peticiones) 
+    amplitud_intervalo_en_dias = math.floor(amplitud_intervalo_fechas / (3600 * 24))
+
+    # rehacemos la variable filtros para eliminar fecha_inicio y fecha_fin
+    exclude_keys = ['fecha_inicio', 'fecha_fin'] # https://stackoverflow.com/questions/8717395/retain-all-entries-except-for-one-key-python
+    filtros_nuevo = {k: filtros[k] for k in set(list(filtros.keys())) - set(exclude_keys)}
+    
+    f_ini = fecha_inicio
+    datos = []
+    for i in range(0, numero_peticiones):
+        f_fin = datetime.strptime(f_ini, '%Y-%m-%d') + amplitud_intervalo_en_dias * 3600 * 24
+        f_fin = datetime.strptime(f_fin, '%Y-%m-%d')
+        filtros_nuevo['fecha_inicio'] = f_ini
+        filtros_nuevo['fecha_fin'] = f_fin
+        datos.append(extrae_datos_climaticos_API(estacion, frecuencia, filtros_nuevo))
+        f_ini = f_fin
+    
+    return(datos)
 
 def filtra_datos_validos(response, incluir_datos_Sospechosos = False, valor_por_defecto_si_no_valido = ""):
     """
