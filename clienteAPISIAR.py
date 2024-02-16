@@ -1,18 +1,34 @@
+# ESPACIO DE TRABAJO
+#-*-coding:utf-8-*- # CODIFICACION
+
+
 """
     Esta primera versión es una prueba de concepto para probar el funcionamiento de la API
 
     Existen distintas partes del código que necesitan revisión, están marcados con el símbolo !!!
 
 """
-import requests # peticiones html
-import datetime # Para trabajar con las fechas u horas
-import time # Para trabajar con las fechas u horas
-import math 
 
+__author__ = "SIAR-GOBIERNO DE LA RIOJA"
+__copyright__ = ""
+__credits__ =["Joaquín Huete", "Vanessa Tobar"]
+__license__ = "MIT"
+__version__ = "0.1"
+__email__ = "siar.cida@larioja.org"
+__status__ = "Desarrollo"
+
+# CONSTANTES
 
 API_URL_ROOT = "https://ias1.larioja.org/apiSiar/servicios/v2/"
+# 
 
-# FUNCIONES AUXILIARES
+# cargar modulos/funciones
+import datetime # Para trabajar con las fechas u horas
+import math 
+import requests # peticiones html
+import time # Para trabajar con las fechas u horas
+
+# FUNCIONES AUXILIARES !!! a archivo CAS_funciones_auxiliares.py
 def extrae_num_maximo_registros():
     api_url = API_URL_ROOT + "numero-maximo-registros"
     res = requests.get(api_url)
@@ -41,9 +57,9 @@ def extrae_funciones_agregacion(extrae_abreviatura = False):
             return(abreviatura)
         else:
             return(res)
-
     else:
         print("Error al comunicar con la API")
+        return(res)
 
 #Test
 #extrae_funciones_agregacion()
@@ -77,9 +93,9 @@ def extrae_parametros(extrae_abreviatura = False):
             return(abreviatura)
         else:
             return(res)
-
     else:
         print("Error al comunicar con la API")
+        return(res)
 
 #Test
 #extrae_parametros()
@@ -113,6 +129,7 @@ def extrae_frecuencias(extrae_abreviatura = False):
 
     else:
         print("Error al comunicar con la API")
+        return(res)
 
 #Test
 #extrae_frecuencias()
@@ -147,6 +164,7 @@ def extrae_posiciones(extrae_abreviatura = False):
 
     else:
         print("Error al comunicar con la API")
+        return(res)
 
 #Test
 #extrae_posiciones()
@@ -162,12 +180,14 @@ def existe_posicion(abreviatura):
 #existe_posicion("Standard")
 #existe_posicion("Tremp")
 
+# DEFINICION ADICIONAL DE OTRAS CONSTANTES ÚTILES
 NUMERO_MAXIMO_REGISTROS = extrae_num_maximo_registros()
 FUNCIONES_AGREGACION = extrae_funciones_agregacion()
 PARAMETROS = extrae_parametros()
 FRECUENCIAS = extrae_frecuencias()
 POSICIONES = extrae_posiciones()
 
+# FUNCIONES MÉTODO ESTACIONES #!!! A archivo CAS_funciones_estaciones.py
 
 def extrae_estaciones(extrae_codigos = False): #, codigo_estacion = None):
     #if(codigo_estacion  == None): #!!! is.none????
@@ -190,10 +210,11 @@ def extrae_estaciones(extrae_codigos = False): #, codigo_estacion = None):
 
     else:
         print("Error al comunicar con la API")
+        return(res)
 
 #Test
-extrae_estaciones()
-extrae_estaciones(True)
+#extrae_estaciones()
+#extrae_estaciones(True)
 
 
 def existe_estacion(codigo_estacion):
@@ -208,32 +229,33 @@ def existe_estacion(codigo_estacion):
 #existe_estacion("Tremp")
 
 def extraer_primera_fecha(estacion, frecuencia):
-    # !!! pendiente de modificación API
-    # por ahora va a devolver la primera fecha disponible
     res = extrae_estaciones(extrae_codigos = False, codigo_estacion = estacion)
     if frecuencia == 'T':
         return res["fecha_primer_semihorario"]
     else:
         return res["fecha_primer_diario"]
 
-    
+#!!! PENDIENTE DE TEST
 def extraer_ultima_fecha(estacion, frecuencia):
-    # !!! pendiente de modificación API, por ahora va a devolver la última fecha
-  
-    h = time.time() # Convetirmos la hora actual a EPOCH y restamos media hora 
-    fecha_fin = str(h.year) + "-" + str(h.month) + "-" + str(h.day) + " " + str(h.hour) + ":" + str(h.minute) + ":00"
+    res = extrae_estaciones(extrae_codigos = False, codigo_estacion = estacion)
+    if frecuencia == 'T':
+        return res["fecha_ultimo_semihorario"] # comprobar sintaxis
+    else:
+        return res["fecha_ultimo_diario"] # comprobar sintaxis
+#!!! PENDIENTE DE TEST
 
-    return(fecha_fin)
-    
 
+
+
+#FUNCIONES EXTRACCIÓN DATOS CLIMÁTICOS # a módulo CAS_funciones_extraccion_datos.py
 def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
     """
     Es función auxiliar de extrae_datos_climaticos_API()
-
+    
     La url a la que se envía la petición descarta los valores de filtros no válidos, no es necesario analizarlos por nuestra parte
     Ej de la variable filtros = {fecha_inicio: "2015-06-02", funcion = "Max"}, ver manual API los filtros aceptados
     """
-
+    
     api_url = API_URL_ROOT + "datos-climaticos/" + str(estacion) + "/" + frecuencia # Creamos URL según manual API
     
     if len(filtros) > 0: # probar esta función sin esta condición, si len = 0 (la variable filtro no está definida / está vacía funciona?¿?¿?)
@@ -242,12 +264,12 @@ def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
             api_url = api_url + char_union + key + "=" + value
             char_union = "&" # Después del primer filtro, si hay otros, se encadenan con "&"
     
-
     return(api_url)
 
 # Test
 #genera_url_datos_climaticos(501, "M")
 #genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+#genera_url_datos_climaticos(501, "T", **{"fecha_inicio": "2024-02-13", "parametro": "T", "funcion": "Med"})
 
 def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
     """
@@ -283,12 +305,13 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
             return(None)
     else:
         print("Error al comunicar con la API")
+        print(str(res))
         return(None)
 
 # Test
-print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
-datos_clima = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
-datos_clima = extrae_datos_climaticos_API(501, "T", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+#print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
+#datos_clima = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
+#datos_clima = extrae_datos_climaticos_API(501, "T", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 
 def extrae_datos_climaticos_exceso_registros(numero_registros, estacion, frecuencia, **filtros):
     
@@ -380,6 +403,7 @@ def filtra_datos_validos(response, incluir_datos_Sospechosos = False, valor_por_
 #datos_brutos_lluvia = extrae_datos_climaticos_API(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "P", "funcion": "Ac"})
 #datos_lluvia = filtra_datos_validos(datos_brutos_lluvia, incluir_datos_Sospechosos = False, valor_por_defecto_si_no_valido = "") 
 
+# ANALIZAR SI ES ÚTIL O BORRAR
              
 def extrae_datos_parametro(datos_brutos, parametro):
     """
