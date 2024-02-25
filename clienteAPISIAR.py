@@ -1,12 +1,13 @@
 # ESPACIO DE TRABAJO
 #-*-coding:utf-8-*- # CODIFICACION
 
-
 """
-    Esta primera versión es una prueba de concepto para probar el funcionamiento de la API
+    Prueba de concepto para explotar la V2 de la API SIAR 
 
+    Incluye todas las funciones necesarias para consultar todos los servicios de 
+    la API del SIAR, ver: https://www.larioja.org/larioja-client/cm/agricultura/images?idMmedia=1499039
+    
     Existen distintas partes del código que necesitan revisión, están marcados con el símbolo !!!
-
 """
 
 __author__ = "SIAR-GOBIERNO DE LA RIOJA"
@@ -18,31 +19,42 @@ __email__ = "siar.cida@larioja.org"
 __status__ = "Desarrollo"
 
 # CONSTANTES
-
 API_URL_ROOT = "https://ias1.larioja.org/apiSiar/servicios/v2/"
-# 
+DEBUG = False # Debug = True devuelve valores respuesta API en caso de error
+            # Debug = False devuelve None cuando no comunica bien con la API
 
-# cargar modulos/funciones
+# cargar modulos
 import datetime # Para trabajar con las fechas u horas
 import math 
 import requests # peticiones html
 import time # Para trabajar con las fechas u horas
 
-# FUNCIONES AUXILIARES !!! a archivo CAS_funciones_auxiliares.py
-def extrae_num_maximo_registros():
+# FUNCIONES AUXILIARES !!! a archivo cas_funciones_auxiliares.py
+def extrae_num_maximo_registros() -> int:
+    """ Obtiene el núm. máx. de registros que la API SIAR devuelve en una única peticion"""
     api_url = API_URL_ROOT + "numero-maximo-registros"
     res = requests.get(api_url)
     
     if res.ok:
         res = res.json()
-        return(res["numero-maximo-registros"])
+        return int(res["numero-maximo-registros"])
     else:
-        print("Error al comunicar con la API")
+        if DEBUG:
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            print("Error al comunicar con la API")
+            return None
 
 # Test
 #extrae_num_maximo_registros()
 
-def extrae_funciones_agregacion(extrae_abreviatura = False):
+def extrae_funciones_agregacion(extrae_abreviatura: bool = False) -> list:
+    """ 
+    genera lista de diccionarios con la respuesta del servicio ./funciones-agregacion
+    si extrae_abreviatura = True, simplifica respuesta y devuelve lista de str con
+    abreviaturas posibles de esta variable al extraer datos climaticos
+    """
     api_url = API_URL_ROOT + "funciones-agregacion"
     
     res = requests.get(api_url)
@@ -54,31 +66,40 @@ def extrae_funciones_agregacion(extrae_abreviatura = False):
             abreviatura = []
             for i in range(0, len(res)):
                 abreviatura.append(res[i]["abreviatura"])
-            return(abreviatura)
+            return abreviatura
         else:
-            return(res)
+            return res
     else:
-        print("Error al comunicar con la API")
-        return(res)
+        print("Error al comunicar con la API http.status != 200")
+        if DEBUG:
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            return None
 
 #Test
 #extrae_funciones_agregacion()
 #extrae_funciones_agregacion(True)
 
-
-
-def existe_funcion(abreviatura):
+def existe_funcion(abreviatura: str) -> bool:
+    """ Permite consultar si una abreviatura de función existe"""
     abreviaturas_posibles = extrae_funciones_agregacion(True)
     for i in abreviaturas_posibles:
-        if(i == abreviatura): return(True)
-    return(False)
+        if i == abreviatura:
+            return True
+    return False
 
 #Test
 #existe_funcion("Med")
 #existe_funcion("Tremp")
 
 
-def extrae_parametros(extrae_abreviatura = False):
+def extrae_parametros(extrae_abreviatura: bool = False) -> list:
+    """ 
+    genera lista de diccionarios con la respuesta del servicio ./parametros
+    si extrae_abreviatura = True, simplifica respuesta y devuelve lista de str con
+    abreviaturas posibles para esta variable al extraer datos climaticos
+    """
     api_url = API_URL_ROOT + "parametros"
     
     res = requests.get(api_url)
@@ -90,28 +111,39 @@ def extrae_parametros(extrae_abreviatura = False):
             abreviatura = []
             for i in range(0, len(res)):
                 abreviatura.append(res[i]["abreviatura"])
-            return(abreviatura)
+            return abreviatura
         else:
-            return(res)
+            return res
     else:
-        print("Error al comunicar con la API")
-        return(res)
+        print("Error al comunicar con la API http.status != 200")
+        if DEBUG:
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            return None
 
 #Test
 #extrae_parametros()
 #extrae_parametros(True)
 
-def existe_parametro(abreviatura):
+def existe_parametro(abreviatura: str) -> bool:
+    """ Permite consultar si una abreviatura de parametro existe"""
     abreviaturas_posibles = extrae_parametros(True)
     for i in abreviaturas_posibles:
-        if(i == abreviatura): return(True)
-    return(False)
+        if i == abreviatura: return True
+    return False
 
 #Test
 #existe_parametro("T")
 #existe_parametro("Tremp")
 
-def extrae_frecuencias(extrae_abreviatura = False):
+def extrae_frecuencias(extrae_abreviatura: bool = False) -> list:
+    """ 
+    genera lista de diccionarios con la respuesta del servicio ./frecuencias
+    si extrae_abreviatura = True, simplifica respuesta y devuelve lista de str con
+    abreviaturas posibles para esta variable al extraer datos climaticos
+    """
+
     api_url = API_URL_ROOT + "frecuencias"
     
     res = requests.get(api_url)
@@ -123,30 +155,41 @@ def extrae_frecuencias(extrae_abreviatura = False):
             abreviatura = []
             for i in range(0, len(res)):
                 abreviatura.append(res[i]["abreviatura"])
-            return(abreviatura)
+            return abreviatura
         else:
-            return(res)
+            return res 
 
     else:
-        print("Error al comunicar con la API")
-        return(res)
+        print("Error al comunicar con la API http.status != 200")
+        if(DEBUG):
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            return None
 
 #Test
 #extrae_frecuencias()
 #extrae_frecuencias(True)
 
 
-def existe_frecuencia(abreviatura):
+def existe_frecuencia(abreviatura: str) -> bool:
+    """ Permite consultar si una abreviatura de frecuencia existe"""
     abreviaturas_posibles = extrae_frecuencias(True)
     for i in abreviaturas_posibles:
-        if(i == abreviatura): return(True)
-    return(False)
+        if(i == abreviatura): return True
+    return False
 
 #Test
 #existe_frecuencia("T")
 #existe_frecuencia("Tremp")
 
-def extrae_posiciones(extrae_abreviatura = False):
+def extrae_posiciones(extrae_abreviatura: bool = False) -> list:
+    """ 
+    genera lista de diccionarios con la respuesta del servicio ./posiciones
+    si extrae_abreviatura = True, simplifica respuesta y devuelve lista de str con
+    abreviaturas posibles para esta variable al extraer datos climaticos
+    """
+
     api_url = API_URL_ROOT + "posiciones"
     
     res = requests.get(api_url)
@@ -158,42 +201,51 @@ def extrae_posiciones(extrae_abreviatura = False):
             abreviatura = []
             for i in range(0, len(res)):
                 abreviatura.append(res[i]["abreviatura"])
-            return(abreviatura)
+            return abreviatura
         else:
-            return(res)
+            return res
 
     else:
-        print("Error al comunicar con la API")
-        return(res)
+        print("Error al comunicar con la API http.status != 200")
+        if DEBUG:
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            return None
 
 #Test
 #extrae_posiciones()
 #extrae_posiciones(True)
 
-def existe_posicion(abreviatura):
+def existe_posicion(abreviatura: str) -> bool:
+    """ Permite consultar si una abreviatura de posición existe"""
     abreviaturas_posibles = extrae_posiciones(True)
     for i in abreviaturas_posibles:
-        if(i == abreviatura): return(True)
-    return(False)
+        if(i == abreviatura): return True
+    return False
 
 #Test
 #existe_posicion("Standard")
 #existe_posicion("Tremp")
 
 # DEFINICION ADICIONAL DE OTRAS CONSTANTES ÚTILES
-NUMERO_MAXIMO_REGISTROS = extrae_num_maximo_registros()
-FUNCIONES_AGREGACION = extrae_funciones_agregacion()
-PARAMETROS = extrae_parametros()
-FRECUENCIAS = extrae_frecuencias()
-POSICIONES = extrae_posiciones()
+if True: #!!!main == __name__:
+    NUMERO_MAXIMO_REGISTROS = extrae_num_maximo_registros()
+    FUNCIONES_AGREGACION = extrae_funciones_agregacion()
+    PARAMETROS = extrae_parametros()
+    FRECUENCIAS = extrae_frecuencias()
+    POSICIONES = extrae_posiciones()
 
-# FUNCIONES MÉTODO ESTACIONES #!!! A archivo CAS_funciones_estaciones.py
-
-def extrae_estaciones(extrae_codigos = False): #, codigo_estacion = None):
-    #if(codigo_estacion  == None): #!!! is.none????
-    #    api_url = API_URL_ROOT + "estaciones"
-    #else:
-    api_url = API_URL_ROOT + "estaciones/" #+ codigo_estacion
+# FUNCIONES MÉTODO ESTACIONES #!!! A archivo cas_funciones_servicio_estaciones.py
+def extrae_estaciones(extrae_codigos: bool = False, codigo_estacion: str = None) -> list:
+    """ 
+    genera lista de diccionarios con la respuesta del servicio ./estaciones
+    si extrae_abreviatura = True, simplifica respuesta y devuelve lista de str con
+    los codigo_estacion válidos para esta variable al extraer datos climaticos
+    """
+    api_url = API_URL_ROOT + "estaciones"
+    if(codigo_estacion is not None):
+        api_url = API_URL_ROOT + "estaciones/" + codigo_estacion
     
     res = requests.get(api_url)
     
@@ -204,40 +256,49 @@ def extrae_estaciones(extrae_codigos = False): #, codigo_estacion = None):
             codigo_estacion = list()  #[]
             for i in range(0, len(res)):
                 codigo_estacion.append(res[i]["codigo_estacion"])
-            return(codigo_estacion)
+            return codigo_estacion
         else:
-            return(res)
+            return res
 
     else:
-        print("Error al comunicar con la API")
-        return(res)
+        print("Error al comunicar con la API http.status != 200")
+        if DEBUG:
+            print("Se devuelve salida de la API sin procesar")
+            return res
+        else:
+            return None
 
 #Test
 #extrae_estaciones()
 #extrae_estaciones(True)
 
 
-def existe_estacion(codigo_estacion):
+def existe_estacion(codigo_estacion: str) -> bool:
+    """ Permite consultar si una codigo_estación existe"""
     codigos_posibles = extrae_estaciones(True)
     for i in codigos_posibles:
-        if(i == str(codigo_estacion)): return(True) #conversion de tipo porque el valor de la API se registra como str
-    return(False)
+        if(i == str(codigo_estacion)): return True #conversion de tipo porque el valor de la API se registra como str
+    return False
 
 #Test
 #existe_estacion("501")
 #existe_estacion(501)
 #existe_estacion("Tremp")
 
-def extraer_primera_fecha(estacion, frecuencia):
+def extraer_primera_fecha(estacion: str, frecuencia: str) -> str:
     res = extrae_estaciones(extrae_codigos = False, codigo_estacion = estacion)
+    if res is None:
+        return None
     if frecuencia == 'T':
         return res["fecha_primer_semihorario"]
     else:
         return res["fecha_primer_diario"]
 
 #!!! PENDIENTE DE TEST
-def extraer_ultima_fecha(estacion, frecuencia):
+def extraer_ultima_fecha(estacion: str, frecuencia: str) -> str:
     res = extrae_estaciones(extrae_codigos = False, codigo_estacion = estacion)
+    if res is None:
+        return None
     if frecuencia == 'T':
         return res["fecha_ultimo_semihorario"] # comprobar sintaxis
     else:
@@ -247,13 +308,15 @@ def extraer_ultima_fecha(estacion, frecuencia):
 
 
 
-#FUNCIONES EXTRACCIÓN DATOS CLIMÁTICOS # a módulo CAS_funciones_extraccion_datos.py
-def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
+#FUNCIONES EXTRACCIÓN DATOS CLIMÁTICOS # a módulo cas_funciones_extraccion_datos.py
+def genera_url_datos_climaticos(estacion: str, frecuencia: str, **filtros: dict):
     """
     Es función auxiliar de extrae_datos_climaticos_API()
     
-    La url a la que se envía la petición descarta los valores de filtros no válidos, no es necesario analizarlos por nuestra parte
-    Ej de la variable filtros = {fecha_inicio: "2015-06-02", funcion = "Max"}, ver manual API los filtros aceptados
+    La url a la que se envía la petición descarta los valores de filtros no válidos
+    en esta primera version no se analizan en esta funcion si los filtros son ok
+    Ej de la variable filtros = {fecha_inicio: "2015-06-02", funcion = "Max"}, 
+    ver manual API los filtros aceptados
     """
     
     api_url = API_URL_ROOT + "datos-climaticos/" + str(estacion) + "/" + frecuencia # Creamos URL según manual API
@@ -271,12 +334,12 @@ def genera_url_datos_climaticos(estacion, frecuencia, **filtros):
 #genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"})
 #genera_url_datos_climaticos(501, "T", **{"fecha_inicio": "2024-02-13", "parametro": "T", "funcion": "Med"})
 
-def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
+def extrae_datos_climaticos_API(estacion: str, frecuencia: str, **filtros: dict):
     """
         Obtiene la respuesta de la apisiar. Si es correcta devuelve los datos (según la descripción del objeto de respuesta descritos en manual)
         Si es incorrecta puede ser por dos razones:
             - La API responde OK pero hay exceso de parámetros en la respuesta !!! PENDIENTE DE AÑADIR RECURSIVIDAD
-            - La API responde OK pero hay algún otro error (???PUEDE SUCEDER???)
+            - La API responde OK pero hay algún otro error (???PUEDE SUCEDER???,un caso es que los filtros añadidos hagan que la respuesta contenga 0 registros)
             - Error de comunicación con la API (!!!Pendiente gestionar excepción)
 
         Observaciones:
@@ -285,6 +348,7 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
          !!! pendiente añadir alguna funcionalidad para debugging, si DEBUG = TRUE entonces devolver la api_url generada e información sobre la respuesta recibida.
    
     """
+
     api_url = genera_url_datos_climaticos(estacion, frecuencia,  **filtros)
     res = requests.get(api_url) # conectamos con esa url método GET y guardamos el contenido en la variable res
     
@@ -302,11 +366,16 @@ def extrae_datos_climaticos_API(estacion, frecuencia, **filtros):
                 return(extrae_datos_climaticos_exceso_registros(numero_registros, estacion, frecuencia, **filtros))
         else:
             print("Error al recibir los datos. str(res) = " + str(res))
-            return(None)
+            if(DEBUG):
+                return(res)
+            else:
+                return(None)
     else:
         print("Error al comunicar con la API")
-        print(str(res))
-        return(None)
+        if(DEBUG):
+            return(res)
+        else:
+            return(None)
 
 # Test
 #print("Extraer datos de la url = " + genera_url_datos_climaticos(501, "M", **{"fecha_inicio": "2015-01-01", "parametro": "T", "funcion": "Med"}))
